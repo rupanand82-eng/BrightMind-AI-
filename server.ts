@@ -52,6 +52,59 @@ function getGeminiClient(): GoogleGenAI | null {
   }
 }
 
+// Helper to execute generateContent with automatic exponential backoff retry and model fallback chain
+async function generateContentWithRetry(
+  ai: GoogleGenAI,
+  params: any,
+  maxRetriesPerModel = 2,
+  initialDelayMs = 1000
+): Promise<any> {
+  // Define fallback models if the requested model is gemini-3.5-flash
+  const modelsToTry = params.model === "gemini-3.5-flash"
+    ? ["gemini-3.5-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"]
+    : [params.model];
+
+  let lastError: any = null;
+
+  for (const modelName of modelsToTry) {
+    const currentParams = { ...params, model: modelName };
+    console.log(`[EduSphere Server] Attempting Gemini API request with model: ${modelName}`);
+
+    for (let attempt = 1; attempt <= maxRetriesPerModel; attempt++) {
+      try {
+        const result = await ai.models.generateContent(currentParams);
+        console.log(`[EduSphere Server] Successfully completed request using model: ${modelName}`);
+        return result;
+      } catch (error: any) {
+        lastError = error;
+        const errorMsg = String(error?.message || error?.status || error || "").toLowerCase();
+        console.warn(`[EduSphere Server] Gemini API model ${modelName} (attempt ${attempt}/${maxRetriesPerModel}) failed:`, errorMsg);
+        
+        const isTransient =
+          errorMsg.includes("503") ||
+          errorMsg.includes("unavailable") ||
+          errorMsg.includes("429") ||
+          errorMsg.includes("resource_exhausted") ||
+          errorMsg.includes("high demand") ||
+          errorMsg.includes("spikes in demand") ||
+          error?.status === 503 ||
+          error?.status === 429;
+
+        if (isTransient && attempt < maxRetriesPerModel) {
+          const delay = initialDelayMs * Math.pow(2, attempt - 1);
+          console.log(`[EduSphere Server] Transient Gemini error on ${modelName}. Retrying in ${delay}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          // If not transient, or we ran out of retries for this model, we break and move to the next model in the fallback list
+          break;
+        }
+      }
+    }
+  }
+
+  throw lastError || new Error("Failed all fallback models and retries");
+}
+
 // 1. Endpoint for custom explained topics
 app.post(["/api/ai/explain", "/ai/explain"], async (req: Request, res: Response) => {
   const { subject, topic, customQuestion } = req.body;
@@ -66,7 +119,7 @@ app.post(["/api/ai/explain", "/ai/explain"], async (req: Request, res: Response)
   const ai = getGeminiClient();
   if (ai) {
     try {
-      const response = await ai.models.generateContent({
+      const response = await generateContentWithRetry(ai, {
         model: "gemini-3.5-flash",
         contents: `You are EduSphere AI, a friendly, hyper-energetic, and smart 3D science assistant.
 Provide a high-energy, kid-friendly, yet deeply educational explanation.
@@ -106,7 +159,7 @@ app.post(["/api/ai/quiz-reason", "/ai/quiz-reason"], async (req: Request, res: R
   const ai = getGeminiClient();
   if (ai) {
     try {
-      const response = await ai.models.generateContent({
+      const response = await generateContentWithRetry(ai, {
         model: "gemini-3.5-flash",
         contents: `You are EduSphere AI, the educational bot.
 Analyze this quiz response for a curious student:
