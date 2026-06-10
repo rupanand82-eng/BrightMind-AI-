@@ -11,6 +11,12 @@ const PORT = 3000;
 
 app.use(express.json());
 
+// Log middleware for easy deployment and routing debugging on Vercel
+app.use((req, res, next) => {
+  console.log(`[EduSphere Server] Method: ${req.method} | URL: ${req.url} | Path: ${req.path}`);
+  next();
+});
+
 // Predefined fallback explanations for offline / missing-API-key mode
 const FALLBACK_EXPLANATIONS: Record<string, string> = {
   nucleus: "🧬 **The Nucleus (Cell Control Center):** Think of the nucleus as the 'Brain' of the cell! It lives right in the center and holds all the DNA instructions. It tells every other organelle exactly what to do, what proteins to make, and when to divide. Without it, the cell wouldn't know how to function!",
@@ -47,7 +53,7 @@ function getGeminiClient(): GoogleGenAI | null {
 }
 
 // 1. Endpoint for custom explained topics
-app.post("/api/ai/explain", async (req: Request, res: Response) => {
+app.post(["/api/ai/explain", "/ai/explain"], async (req: Request, res: Response) => {
   const { subject, topic, customQuestion } = req.body;
   const topicName = topic ? String(topic).toLowerCase().trim() : "";
   const query = customQuestion ? String(customQuestion).trim() : "";
@@ -94,7 +100,7 @@ Target: "${finalQuery}" under subject context: "${subject || "general science"}"
 });
 
 // 2. Endpoint for Quiz Hints and "Why this answer?"
-app.post("/api/ai/quiz-reason", async (req: Request, res: Response) => {
+app.post(["/api/ai/quiz-reason", "/ai/quiz-reason"], async (req: Request, res: Response) => {
   const { subject, question, answerSelected, correctAnswer, isCorrect } = req.body;
 
   const ai = getGeminiClient();
