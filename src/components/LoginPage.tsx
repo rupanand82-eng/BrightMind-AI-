@@ -21,7 +21,7 @@ import { soundEngine } from "../utils/soundEngine";
 import confetti from "canvas-confetti";
 import { signInWithPopup } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { auth, googleProvider, db } from "../utils/firebase";
+import { auth, googleProvider, db, firebaseConfigActive } from "../utils/firebase";
 
 interface LoginPageProps {
   onLoginSuccess: (name: string, role: string) => void;
@@ -470,18 +470,18 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                     </div>
 
                     <p className="text-white/70 text-[10.5px] leading-relaxed">
-                      This domain is not yet authorized in Firebase Console &rarr; Auth &rarr; Settings for project <code className="text-cyan-300 bg-white/5 px-1 rounded font-mono font-bold">rajuc8-b0b28</code>.
+                      This domain is not yet authorized in Firebase Console &rarr; Auth &rarr; Settings for project <code className="text-cyan-300 bg-white/5 px-1 rounded font-mono font-bold">{firebaseConfigActive.projectId}</code>.
                     </p>
 
                     <ol className="list-decimal pl-4 space-y-1 text-white/80 text-[10px]">
                       <li>
-                        Go to <a href="https://console.firebase.google.com/project/rajuc8-b0b28/authentication/providers" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline font-semibold transition-colors">Firebase Console Auth Settings ↗</a>
+                        Go to <a href={`https://console.firebase.google.com/project/${firebaseConfigActive.projectId}/authentication/providers`} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline font-semibold transition-colors">Firebase Console Auth Settings ↗</a>
                       </li>
                       <li>
                         Select the <span className="font-semibold text-white">Settings</span> tab, then click <span className="font-semibold text-white">Authorized domains</span>.
                       </li>
                       <li>
-                        Add the hostname(s) shown below:
+                        Add the hostname shown below:
                       </li>
                     </ol>
 
@@ -495,22 +495,6 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                           onClick={() => {
                             navigator.clipboard.writeText(window.location.hostname);
                             alert("Copied: " + window.location.hostname);
-                          }}
-                          className="bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/30 text-cyan-300 text-[8.5px] px-1.5 py-0.5 rounded font-mono font-bold cursor-pointer transition-colors"
-                        >
-                          Copy
-                        </button>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-lg p-1.5 justify-between">
-                        <span className="font-mono text-[9px] text-cyan-200 select-all truncate">
-                          ais-pre-qvrkfoks5f3nyfrh6iwvnj-548525680831.asia-east1.run.app
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard.writeText("ais-pre-qvrkfoks5f3nyfrh6iwvnj-548525680831.asia-east1.run.app");
-                            alert("Copied: ais-pre-qvrkfoks5f3nyfrh6iwvnj-548525680831.asia-east1.run.app");
                           }}
                           className="bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/30 text-cyan-300 text-[8.5px] px-1.5 py-0.5 rounded font-mono font-bold cursor-pointer transition-colors"
                         >

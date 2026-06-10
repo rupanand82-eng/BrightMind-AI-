@@ -1,4 +1,4 @@
-# EduSphere AI — Learn in 3D
+# Remix: EduSphere AI — Learn in 3D
 
 EduSphere AI is a vibrant, interactive, AI-powered learning application designed to make complex science and logic concepts intuitive. It features high-fidelity 3D simulations, science models, logic animations, gamified achievements (streaks & energy points), and custom AI tutor explanations driven by Google's Gemini API.
 

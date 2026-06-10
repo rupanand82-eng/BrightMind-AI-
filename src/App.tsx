@@ -38,10 +38,9 @@ import DigitalNotepad from "./components/DigitalNotepad";
 import QuickCheckPopup from "./components/QuickCheckPopup";
 import RapidRecall from "./components/RapidRecall";
 import LoginPage from "./components/LoginPage";
-import { auth, googleProvider } from "./utils/firebase";
+import { auth, googleProvider, db, firebaseConfigActive } from "./utils/firebase";
 import { signOut, signInWithPopup } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "./utils/firebase";
 import confetti from "canvas-confetti";
 
 export default function App() {
@@ -644,7 +643,7 @@ export default function App() {
                                   <span>Domain Unauthorized</span>
                                 </div>
                                 <p className="text-white/70 leading-relaxed text-[9.5px]">
-                                  Please add the following hostname to your <a href="https://console.firebase.google.com/project/rajuc8-b0b28/authentication/providers" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline hover:text-cyan-300 font-semibold transition-colors">Firebase Console Auth Settings ↗</a> (Settings tab &rarr; Authorized domains):
+                                  Please add the following hostname to your <a href={`https://console.firebase.google.com/project/${firebaseConfigActive.projectId}/authentication/providers`} target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline hover:text-cyan-300 font-semibold transition-colors">Firebase Console Auth Settings ↗</a> (Settings tab &rarr; Authorized domains):
                                 </p>
                                 <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-lg p-1.5 justify-between">
                                   <span className="font-mono text-[8.5px] text-cyan-200 select-all truncate">
